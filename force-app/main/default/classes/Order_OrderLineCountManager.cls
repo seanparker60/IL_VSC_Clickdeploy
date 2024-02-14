@@ -2,7 +2,7 @@ public with sharing class Order_OrderLineCountManager implements Queueable {
     
     public static Decimal FIXEDLINECOUNT;
 
-    
+    Public static String DebugLogs;
     Private String load;
     Private Order CurOrder ;
     Private List<Order> MaxOrder;
@@ -12,7 +12,7 @@ public with sharing class Order_OrderLineCountManager implements Queueable {
         
         
 
-        system.debug('**Order_OrderLineCountManager: FIXEDLINECOUNT**'+FIXEDLINECOUNT);
+        system.debug('**OrderLineCountManager: FIXEDLINECOUNT**'+FIXEDLINECOUNT);
 
         if(load == 'Start'){           
             this.MaxOrder = MaxOrder;
@@ -29,24 +29,18 @@ public with sharing class Order_OrderLineCountManager implements Queueable {
           
         }   
 
-        system.debug('**Order_OrderLineCountManager: Cur**'+CurOrder);
-          system.debug('**Order_OrderLineCountManager: Max**'+MaxOrder);
+        system.debug('**OrderLineCountManager: Cur**'+CurOrder);
+          system.debug('**OrderLineCountManager: Max**'+MaxOrder);
 
     }
     public void execute(System.QueueableContext qc) {
-         system.debug('**Order_OrderLineCountManager: CurOrder Order size exe**'+CurOrder);
+         system.debug('**OrderLineCountManager: CurOrder Order size exe**'+CurOrder);
         if(CurOrder != null){
 
         
                 List<Id> OrderId = new List<Id>();
                 OrderId.add(CurOrder.id);
-
-                //OrderItem[] lst_OrdItem = Order_OrderandOrdeItemHandler.returnQueryOrderItems(null,OrderId);
-
-                OrderItem[]   lst_OrdItem =  Order_SoqlFactory.returnQueryOrderItems(null,OrderId,null,null);
-                system.debug('**Order_SoqlFactory.Order_OrderLineCountManager.lst_OrdItem :Size**'+lst_OrdItem.size());
-
-                
+                OrderItem[] lst_OrdItem = Order_OrderandOrdeItemHandler.returnQueryOrderItems(null,OrderId);
 
                 try{
                     ItemGroupSync(lst_OrdItem,CurOrder);
@@ -71,8 +65,9 @@ public with sharing class Order_OrderLineCountManager implements Queueable {
 
         List<Integer> lstItemremoveIndex = new List<Integer>();
 
-        system.debug('**Order_OrderLineCountManager**: ItemGroupSync1');
-
+        system.debug('**Line Count: ProcessLineCount**: ItemGroupSync1');
+        DebugLogs= '**Line Count: ProcessLineCount**: ItemGroupSync1';
+        DebugLogs += '\r\n';
 
         Integer index = 0;
         
@@ -162,8 +157,8 @@ public with sharing class Order_OrderLineCountManager implements Queueable {
         Map<Integer, Integer> Map_ImpLineCount = new Map<Integer, Integer>();
 
         List<OrderItem> lstNewOrderitems;
-                system.debug('**Order_OrderLineCountManager: ProcessLineCount**: NI fullistsize'+ fullistsize);
-                system.debug('**Order_OrderLineCountManager: ProcessLineCount**: NI NoChunks'+ NoChunks);
+                system.debug('**Line Count: ProcessLineCount**: NI fullistsize'+ fullistsize);
+                system.debug('**Line Count: ProcessLineCount**: NI NoChunks'+ NoChunks);
 
        
 
@@ -342,7 +337,7 @@ public with sharing class Order_OrderLineCountManager implements Queueable {
 
         //Non Item Groups list == 0
         Integer ItemGroupListsize = lst_OrdItem.size();
-        system.debug('**Order_OrderLineCountManager: ProcessLineCount**: NI ItemGroupListsize'+ ItemGroupListsize);
+        system.debug('**Line Count: ProcessLineCount**: NI ItemGroupListsize'+ ItemGroupListsize);
         OrderActivationRules__mdt[] OrderActivationRules;
         
         
@@ -467,20 +462,20 @@ public with sharing class Order_OrderLineCountManager implements Queueable {
                    Map_IGLookup2.put(item.ImportItemGroupEAN__c,Item.id);
                 }
             }
-            system.debug('**Order_OrderLineCountManager: ProcessLineCount**: ItemGroup Populate Size:**' +lst_InsertItemGroup.size());
+            system.debug('**Line Count: ProcessLineCount**: ItemGroup Populate Size:**' +lst_InsertItemGroup.size());
                 
             for(OrderItem item: lst_InsertItemGroup){ 
                 
                 if(item.ProductType__c != 'Item Group'){
-                    system.debug('**Order_OrderLineCountManager: ProcessLineCount**: ItemGroup Populate 1_:' + Map_IGLookup.get(item.ImportItemGroupEAN__c));
-                    system.debug('**Order_OrderLineCountManager: ProcessLineCount**: ItemGroup Populate 1a:' +Map_IGLookup2.get(Map_IGLookup.get(item.ImportItemGroupEAN__c)));
-                    system.debug('**Order_OrderLineCountManager: ProcessLineCount**: ItemGroup Populate 1b:' +item.ProductType__c);
-                    system.debug('**Order_OrderLineCountManager: ProcessLineCount**: ItemGroup Populate 1c:' +item.ItemGroup__c);    
+                    system.debug('**Line Count: ProcessLineCount**: ItemGroup Populate 1_:' + Map_IGLookup.get(item.ImportItemGroupEAN__c));
+                    system.debug('**Line Count: ProcessLineCount**: ItemGroup Populate 1a:' +Map_IGLookup2.get(Map_IGLookup.get(item.ImportItemGroupEAN__c)));
+                    system.debug('**Line Count: ProcessLineCount**: ItemGroup Populate 1b:' +item.ProductType__c);
+                    system.debug('**Line Count: ProcessLineCount**: ItemGroup Populate 1c:' +item.ItemGroup__c);    
                 }
                 
                 if(Map_IGLookup2.get(Map_IGLookup.get(item.ImportItemGroupEAN__c)) != null && item.ProductType__c != 'Item Group' ){ //&& item.ItemGroup__c == null
                     //item.ItemGroup__c =    Map_IGLookup2.get(Map_IGLookup.get(item.ProductEAN__c));
-                    system.debug('**Order_OrderLineCountManager: ProcessLineCount**: ItemGroup Populate 2');
+                    system.debug('**Line Count: ProcessLineCount**: ItemGroup Populate 2');
                     item.ItemGroup__c =    Map_IGLookup2.get(Map_IGLookup.get(item.ImportItemGroupEAN__c));
                     
                 }
@@ -490,15 +485,16 @@ public with sharing class Order_OrderLineCountManager implements Queueable {
             update lst_InsertItemGroup;
         }
         catch(exception e){
-            system.debug('**Order_OrderLineCountManager: ProcessLineCount**: IG Update Final Grp 2 : Error:'+ e.getMessage());
-        
+            system.debug('**Line Count: ProcessLineCount**: IG Update Final Grp 2 : Error:'+ e.getMessage());
+            DebugLogs+= '**Line Count: ProcessLineCount**: IG Update Final Grp 2 : Error:'+ e.getMessage();
+
             HandleCustomException.LogException(e,newOrder.id);
         }
 
 
         try{
 
-            system.debug('**Order_OrderLineCountManager: lst_Delete**'+lst_Delete.size());
+            system.debug('**Line Count: lst_Delete**'+lst_Delete.size());
  
             delete lst_Delete;
  
