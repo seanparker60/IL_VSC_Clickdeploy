@@ -24,6 +24,17 @@
     </processMetadataValues>
     <processType>Flow</processType>
     <screens>
+        <name>Copy_1_of_IL_GIT_VCS_DEMO_Screen</name>
+        <label>Copy 1 of IL_GIT_VCS_DEMO_Screen</label>
+        <locationX>176</locationX>
+        <locationY>242</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
         <name>IL_GIT_VCS_DEMO_Screen</name>
         <label>IL_GIT_VCS_DEMO_Screen</label>
         <locationX>176</locationX>
@@ -31,6 +42,9 @@
         <allowBack>true</allowBack>
         <allowFinish>true</allowFinish>
         <allowPause>true</allowPause>
+        <connector>
+            <targetReference>Copy_1_of_IL_GIT_VCS_DEMO_Screen</targetReference>
+        </connector>
         <showFooter>true</showFooter>
         <showHeader>true</showHeader>
     </screens>
