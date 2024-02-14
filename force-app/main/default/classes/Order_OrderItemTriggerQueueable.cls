@@ -12,7 +12,7 @@ public with sharing class Order_OrderItemTriggerQueueable implements Queueable {
       //  this.OrderItems = OrderItems;
 
       this.load = load;
-      system.debug('**Order_OrderItemTrigger: load**'+load);
+      system.debug('**OrderItem Trigger: load**'+load);
       if(load == 'Start'){
           this.CurOrder = CurOrder;
           // this.MaxOrder = MaxOrder;
@@ -21,8 +21,8 @@ public with sharing class Order_OrderItemTriggerQueueable implements Queueable {
            for(Order ord:CurOrder){
               this.MaxOrder.add(ord);
            }
-            system.debug('**Order_OrderItemTrigger: Constructor:CurOrder **'+CurOrder);
-            system.debug('**Order_OrderItemTrigger: Constructor: MaxOrder**'+MaxOrder);
+            system.debug('**OrderItem Trigger: Queueable Constructor**'+CurOrder);
+            system.debug('**OrderItem Trigger: Queueable Constructor: MaxOrder**'+MaxOrder);
          
       }
       else {
@@ -30,8 +30,8 @@ public with sharing class Order_OrderItemTriggerQueueable implements Queueable {
         CurOrder.remove(0);
         this.CurOrder= CurOrder;
         this.MaxOrder = MaxOrder;
-        system.debug('**Order_OrderItemTrigger: load else: CurOrder.size**'+CurOrder.size());
-        system.debug('**Order_OrderItemTrigger: load else: MaxOrder**'+MaxOrder);
+        system.debug('**OrderItem Trigger: load else2**'+CurOrder.size());
+        system.debug('**OrderItem Trigger: load else:MaxOrder**'+MaxOrder);
       }   
 
 
@@ -43,30 +43,29 @@ public with sharing class Order_OrderItemTriggerQueueable implements Queueable {
       
       if(CurOrder.size()>0){      
             
-        system.debug('**Order_OrderItemTrigger: execute: Size>0**');
+        system.debug('**OrderItem Trigger: Queueable Constructor: Size>0**'+CurOrder[0].ShippingIndicationRule__c);
           //  UTIL_TriggerController.OrderItemTriggerSwitch = false;
-            /*
+            
             OrderItem[] lstOrderItem = [Select Product2.VAT__c,DigitalActivationEMail__c,ShipToAccount__r.DigitalActivationEmail__c, 
             ShippingCity__c,ShipToAccount__r.ShippingCity,ShippingCountry__c,ShipToAccount__r.ShippingCountry,ShippingPostalCode__c,ShipToAccount__r.ShippingPostalCode,
             ShippingState__c,ShipToAccount__r.ShippingState,ShippingStreet__c,ShipToAccount__r.ShippingStreet,ShippingIndicationRule__c,Weight__c,Order.ShippingIndicationRule__c
             from OrderItem where OrderId =:CurOrder[0].id];
-            */
-            List<Id> OrderId = new List<Id>();
-            OrderId.add(CurOrder[0].id);
-            OrderItem[]   lstOrderItem =  Order_SoqlFactory.returnQueryOrderItems(null,OrderId,null,null);
-            system.debug('**Order_SoqlFactory.Order_OrderItemTrigger.lstOrderItem :Size**'+lstOrderItem.size());
 
            try{
 
-            system.debug('**Order_OrderItemTrigger: execute: lstOrderItem **'+lstOrderItem);
+            system.debug('**OrderItem Trigger: Queueable Constructor: Dates Load **'+lstOrderItem);
             lstOrderItem =  Order_UpdateVatOnItems.UpdateVatOnItems(lstOrderItem);
            }
           catch(exception e){
-            system.debug('**Order_OrderItemTrigger: execute: Error **'+e.getmessage());
+            system.debug('**OrderItem Trigger: Queueable Constructor: Dates Error **'+e.getmessage());
           }
  
           Order_UpdateShippingCostsFromItems.UpdateShippingCostsFromItems(lstOrderItem,CurOrder[0]);
          
+          system.debug('**OrderItem Trigger: Queueable Constructor: Load:Size **'+CurOrder.size());
+          system.debug('**OrderItem Trigger: Queueable Constructor: Load: CurOrder **'+CurOrder);
+         
+              
 
          if(!test.isrunningtest()){
                 System.enqueueJob(new Order_OrderItemTriggerQueueable(CurOrder,'Next',MaxOrder));
@@ -82,16 +81,17 @@ public with sharing class Order_OrderItemTriggerQueueable implements Queueable {
 
         for(Order ord: MaxOrder){
           Set_OrdId.add(ord.id);
-        } 
+        }     
+        Order[] lst_Order = Order_OrderandOrdeItemHandler.returnQueryOrder(Set_OrdId, null);
 
-        //Order[] lst_Order = Order_OrderandOrdeItemHandler.returnQueryOrder(Set_OrdId, null);
-
-        Order[] lst_Order = Order_SoqlFactory.returnQueryOrder(Set_OrdId,null,null);
-        system.debug('**Order_SoqlFactory.Order_OrderItemTrigger.lst_Order :Size**'+lst_Order.size());
-
-       
         //Check if Date block needs to be reset    
 		    //Possibly add its own if and then make Maxcount the last else
+
+
+//        Order_OrderUtilityQueueable.UpdateOrderDates(lst_Order);
+
+
+
 
         OrderLineItemMaxCount__mdt[] OrderLineItemMaxCount;
        
